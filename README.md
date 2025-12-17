@@ -1,10 +1,10 @@
-# Trading-Bot
+Trading-Bot
 This is a basic Trading Bot 
 
 
 ---
 
-##1. Short Repository Description (The "Elevator Pitch")This text goes into the small, single-line description box on the main repository page (the first thing people see).
+##1. 
 
 > **Quantitative backtesting script for the Dual Moving Average Crossover strategy on AAPL stock, utilizing Pandas for high-speed performance analysis and Matplotlib for visualization.**
 
