@@ -1,0 +1,55 @@
+import yfinance as yf
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- 1. SET PARAMETERS & GET DATA ---
+TICKER = 'AAPL'
+START_DATE = '2015-01-01'
+END_DATE = '2025-01-01'
+SHORT_WINDOW = 50  # Fast Moving Average (50 days)
+LONG_WINDOW = 200 # Slow Moving Average (200 days)
+ 
+# Download historical data from Yahoo Finance
+df = yf.download(TICKER, start=START_DATE, end=END_DATE)
+
+# --- 2. CALCULATE INDICATORS ---
+# Calculate the Simple Moving Averages (SMAs)
+df['SMA_Short'] = df['Close'].rolling(window=SHORT_WINDOW).mean()
+df['SMA_Long'] = df['Close'].rolling(window=LONG_WINDOW).mean()
+
+# Drop the rows where the SMAs haven't been calculated yet (first 199 days)
+df = df.dropna()
+
+# --- 3. GENERATE TRADING SIGNALS ---
+# 1 represents a BUY/LONG position, 0 represents HOLD/FLAT
+df['Position'] = np.where(df['SMA_Short'] > df['SMA_Long'], 1, 0)
+
+# The 'Signal' column finds where the 'Position' changes
+# A change from 0 to 1 is a Buy Signal (Crossover up)
+# A change from 1 to 0 is a Sell Signal (Crossover down)
+df['Signal'] = df['Position'].diff()
+
+# --- 4. VISUALIZE THE RESULTS ---
+plt.figure(figsize=(14, 7))
+
+# Plot the Closing Price and the SMAs
+plt.plot(df['Close'], label='AAPL Close Price', alpha=0.5)
+plt.plot(df['SMA_Short'], label=f'SMA {SHORT_WINDOW}', color='orange')
+plt.plot(df['SMA_Long'], label=f'SMA {LONG_WINDOW}', color='purple')
+
+# Plot the Buy Signals (upward triangles)
+plt.plot(df.loc[df['Signal'] == 1].index,
+         df['Close'][df['Signal'] == 1],
+         '^', markersize=10, color='g', label='BUY Signal')
+
+# Plot the Sell Signals (downward triangles)
+plt.plot(df.loc[df['Signal'] == -1].index,
+         df['Close'][df['Signal'] == -1],
+         'v', markersize=10, color='r', label='SELL Signal')
+
+plt.title(f'{TICKER} Moving Average Crossover Strategy')
+plt.xlabel('Date')
+plt.ylabel('Price (USD)')
+plt.legend()
+plt.show()
